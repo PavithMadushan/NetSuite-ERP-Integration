@@ -1,5 +1,4 @@
 ﻿
-using System.Text.Json;
 using NetSuiteIntegration.Core.Interfaces;
 using NetSuiteIntegration.Core.Models;
 
@@ -8,7 +7,7 @@ namespace NetSuiteIntegration.Infrastructure.Clients;
 public class MockNetSuiteClient : INetSuiteClient
 {
     // Sample customer data
-    private readonly IReadOnlyList<Customer> _customers =
+    private readonly List<Customer> _customers =
     [
         new Customer
         {
@@ -29,57 +28,56 @@ public class MockNetSuiteClient : INetSuiteClient
             CompanyName = "XYZ Solutions (Pvt) Ltd",
             FirstName = "Sarah",
             LastName = "Fernando",
-            Email = "sarah@xyzsolutions.com",
-            Phone = "0719876543",
+            Email = "sarah@xyz.com",
+            Phone = "0779876543",
             SubsidiaryInternalId = "1",
             IsInactive = false
         }
     ];
 
     // Sample item data
-    private readonly IReadOnlyList<Item> _items =
+    private readonly List<Item> _items =
     [
         new Item
         {
             InternalId = "205",
             ExternalId = "ITEM-001",
-            ItemName = "LAPTOP-001",
+            ItemName = "Dell Laptop",
             DisplayName = "Dell Laptop",
             ItemType = "Inventory",
             SKU = "DELL-LAP-001",
             Description = "Dell business laptop",
-            BasePrice = 250000m,
+            BasePrice = 250000,
             IsInactive = false
         },
         new Item
         {
             InternalId = "206",
             ExternalId = "ITEM-002",
-            ItemName = "MOUSE-001",
+            ItemName = "Wireless Mouse",
             DisplayName = "Wireless Mouse",
             ItemType = "Inventory",
             SKU = "MOU-WRL-001",
-            Description = "Wireless optical mouse",
-            BasePrice = 13000m,
+            Description = "Wireless computer mouse",
+            BasePrice = 13000,
             IsInactive = false
         }
     ];
 
     // Sample sales order data
-    private readonly IReadOnlyList<SalesOrder> _salesOrders =
+    private readonly List<SalesOrder> _salesOrders =
     [
         new SalesOrder
         {
             InternalId = "5001",
-            ExternalId = "SO-EXT-001",
+            ExternalId = "SO-001",
             TransactionNumber = "SO1001",
             CustomerInternalId = "105",
-            TransactionDate = new DateOnly(2026, 11, 20),
+            TransactionDate = new DateOnly(2026, 1, 15),
             Status = "Pending Fulfillment",
             CurrencyInternalId = "1",
             Memo = "Sample sales order",
-            Total = 526000m,
-
+            Total = 526000,
             Lines =
             [
                 new SalesOrderLine
@@ -88,8 +86,8 @@ public class MockNetSuiteClient : INetSuiteClient
                     ItemInternalId = "205",
                     Description = "Dell Laptop",
                     Quantity = 2,
-                    Rate = 250000m,
-                    Amount = 500000m
+                    Rate = 250000,
+                    Amount = 500000
                 },
                 new SalesOrderLine
                 {
@@ -97,14 +95,13 @@ public class MockNetSuiteClient : INetSuiteClient
                     ItemInternalId = "206",
                     Description = "Wireless Mouse",
                     Quantity = 2,
-                    Rate = 13000m,
-                    Amount = 26000m
+                    Rate = 13000,
+                    Amount = 26000
                 }
             ]
         }
     ];
 
-    // Customer operations
     public Task<Customer?> GetCustomerByIdAsync(
         string internalId,
         CancellationToken cancellationToken = default)
@@ -122,10 +119,9 @@ public class MockNetSuiteClient : INetSuiteClient
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        return Task.FromResult(_customers);
+        return Task.FromResult<IReadOnlyList<Customer>>(_customers);
     }
 
-    // Item operations
     public Task<Item?> GetItemByIdAsync(
         string internalId,
         CancellationToken cancellationToken = default)
@@ -143,10 +139,8 @@ public class MockNetSuiteClient : INetSuiteClient
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        return Task.FromResult(_items);
+        return Task.FromResult<IReadOnlyList<Item>>(_items);
     }
-
-    // Sales order operations
 
     public Task<SalesOrder?> GetSalesOrderByIdAsync(
         string internalId,
@@ -154,10 +148,10 @@ public class MockNetSuiteClient : INetSuiteClient
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var salesOrder = _salesOrders.FirstOrDefault(
-            so => so.InternalId == internalId);
+        var order = _salesOrders.FirstOrDefault(
+            s => s.InternalId == internalId);
 
-        return Task.FromResult(salesOrder);
+        return Task.FromResult(order);
     }
 
     public Task<IReadOnlyList<SalesOrder>> GetSalesOrdersAsync(
@@ -165,10 +159,8 @@ public class MockNetSuiteClient : INetSuiteClient
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        return Task.FromResult(_salesOrders);
+        return Task.FromResult<IReadOnlyList<SalesOrder>>(_salesOrders);
     }
-
-    // SuiteQL operation
 
     public Task<string> ExecuteSuiteQlAsync(
         string query,
@@ -176,23 +168,14 @@ public class MockNetSuiteClient : INetSuiteClient
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        ArgumentException.ThrowIfNullOrWhiteSpace(query);
-
-        var response = new
-        {
-            IsMock = true,
-            Query = query,
-            Message = "This is a mock SuiteQL response. " +
-                      "No query was executed against NetSuite."
-        };
-
-        var jsonResponse = JsonSerializer.Serialize(
-            response,
-            new JsonSerializerOptions
+        const string mockResponse =
+            """
             {
-                WriteIndented = true
-            });
+                "message": "This is a mock SuiteQL response",
+                "queryExecuted": true
+            }
+            """;
 
-        return Task.FromResult(jsonResponse);
+        return Task.FromResult(mockResponse);
     }
 }

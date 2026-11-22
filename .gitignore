@@ -395,3 +395,7 @@ k8s/charts/config
 coverage-html/
 coverage.info 
 coverage.json
+
+# Repomix generated files
+/repomix-output
+/repomix-output*

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Options;
 using NetSuiteIntegration.Core.Interfaces;
 using NetSuiteIntegration.Infrastructure.Clients;
 using NetSuiteIntegration.Infrastructure.Configuration;
+using NetSuiteIntegration.Infrastructure.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +48,8 @@ builder.Services.AddHttpClient("NetSuite", (serviceProvider, client) =>
 // 4. Register NetSuite implementation
 
 builder.Services.AddSingleton<INetSuiteClient, MockNetSuiteClient>();
+
+builder.Services.AddSingleton<INetSuiteTokenProvider, MockNetSuiteTokenProvider>();
 
 // 5. Build application
 
